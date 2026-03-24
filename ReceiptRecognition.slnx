@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/ReceiptRecognition.App/ReceiptRecognition.App.csproj" />
+    <Project Path="src/ReceiptRecognition.Core/ReceiptRecognition.Core.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/ReceiptRecognition.Core.Tests/ReceiptRecognition.Core.Tests.csproj" />
+  </Folder>
+</Solution>
