@@ -1,22 +1,44 @@
 namespace ReceiptRecognition.Core.Utils.Configuration;
 
 /// <summary>
-/// Placeholder for runtime configuration. Will be fully implemented later.
+/// Process-wide runtime that exposes the active options and tuning knobs.
+/// Uses AsyncLocal for thread-safe scoped overrides.
 /// </summary>
-public static class ReceiptRuntime
+public sealed class ReceiptRuntime
 {
-    public static ReceiptTuning Tuning { get; } = new();
-}
+    private ReceiptRuntime() { }
 
-/// <summary>
-/// Placeholder tuning parameters.
-/// </summary>
-public class ReceiptTuning
-{
-    // TODO: Wire up actual tuning parameters
-    public int OptimizerProductWeight { get; set; } = 1;
-    public int OptimizerPriceWeight { get; set; } = 1;
-    public int OptimizerMaxCacheSize { get; set; } = 16;
-    public int OptimizerConfidenceThreshold { get; set; } = 60;
-    public int OptimizerStabilityThreshold { get; set; } = 60;
+    /// <summary>Global singleton instance.</summary>
+    public static readonly ReceiptRuntime Instance = new();
+
+    private static readonly AsyncLocal<ReceiptOptions?> ScopedOptions = new();
+
+    private ReceiptOptions _options = ReceiptOptions.Defaults();
+
+    /// <summary>Current effective options (merged user/defaults).</summary>
+    public static ReceiptOptions Options => ScopedOptions.Value ?? Instance._options;
+
+    /// <summary>Current effective tuning (shortcut to options.tuning).</summary>
+    public static ReceiptTuning Tuning => Options.Tuning;
+
+    /// <summary>Replace the active options globally.</summary>
+    public static void SetOptions(ReceiptOptions options)
+    {
+        Instance._options = options;
+    }
+
+    /// <summary>Run fn with options temporarily active (thread-safe via AsyncLocal).</summary>
+    public static T RunWithOptions<T>(ReceiptOptions options, Func<T> fn)
+    {
+        var prev = ScopedOptions.Value;
+        ScopedOptions.Value = options;
+        try
+        {
+            return fn();
+        }
+        finally
+        {
+            ScopedOptions.Value = prev;
+        }
+    }
 }

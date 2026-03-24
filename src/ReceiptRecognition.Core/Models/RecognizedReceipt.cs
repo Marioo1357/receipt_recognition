@@ -63,7 +63,7 @@ public class RecognizedReceipt
         if (rawPd != null)
         {
             // TODO: Wire up ReceiptFormatter
-            var parsedDate = ReceiptFormatter.ParseNumericYMD(rawPd) ?? DateTime.Now;
+            var parsedDate = ReceiptFormatter.ParseNumericYMD(rawPd.ToString() ?? "") ?? DateTime.Now;
             purchaseDate = new RecognizedPurchaseDate(parsedDate, new ReceiptTextLine());
         }
 
